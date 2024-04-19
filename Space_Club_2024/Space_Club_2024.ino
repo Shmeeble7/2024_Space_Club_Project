@@ -32,7 +32,11 @@ LIDARLite_v4LED Lidar4;
 int sd = BUILTIN_SDCARD;
 
 //Initialize the data file
-File LidarData;
+File Lidar_1_Data;
+File Lidar_2_Data;
+File Lidar_3_Data;
+File Lidar_4_Data;
+
 
 //define the LED pin
 const int LightPin =  13;
@@ -88,12 +92,36 @@ Wire.setSCL(19);
     }
   }
 
-  LidarData = SD.open("LidarData.txt", FILE_WRITE);
+  Lidar_1_Data = SD.open("Lidar_1_Data.txt", FILE_WRITE);
 
-  if (LidarData)
+  if (Lidar_1_Data)
   {
-    LidarData.println("LidarFile failed to initialize");
-    LidarData.close();
+    Lidar_1_Data.println("Lidar_1_File failed to initialize");
+    Lidar_1_Data.close();
+  }
+
+  Lidar_2_Data = SD.open("Lidar_2_Data.txt", FILE_WRITE);
+
+  if (Lidar_2_Data)
+  {
+    Lidar_2_Data.println("Lidar_2_File failed to initialize");
+    Lidar_2_Data.close();
+  }
+
+  Lidar_3_Data = SD.open("Lidar_3_Data.txt", FILE_WRITE);
+
+  if (Lidar_3_Data)
+  {
+    Lidar_3_Data.println("Lidar_3_File failed to initialize");
+    Lidar_3_Data.close();
+  }
+
+  Lidar_4_Data = SD.open("Lidar_4_Data.txt", FILE_WRITE);
+
+  if (Lidar_4_Data)
+  {
+    Lidar_4_Data.println("Lidar_4_File failed to initialize");
+    Lidar_4_Data.close();
   }
 
 // ----------------------------------------------------------------------
@@ -243,57 +271,57 @@ void loop()
     //===================================================================
     if (Lidar1_newDistance)
     {
-      LidarData = SD.open("Lidar_1_Data.txt", FILE_WRITE);
+      Lidar_1_Data = SD.open("Lidar_1_Data.txt", FILE_WRITE);
 
       //Send the data from the lidar to the text file above
-      if (LidarData)
+      if (Lidar_1_Data)
       {
-        LidarData.print("Lidar 1 distance is: "); LidarData.print(distance);
+        Lidar_1_Data.print("Lidar 1 distance is: "); Lidar_1_Data.print(distance);
         
         //Close the SD Card
-        LidarData.close();
+        Lidar_1_Data.close();
       }
     }
 
      if (Lidar2_newDistance)
     {
-      LidarData = SD.open("Lidar_2_Data.txt", FILE_WRITE);
+      Lidar_2_Data = SD.open("Lidar_2_Data.txt", FILE_WRITE);
 
       //Send the data from the lidar to the text file above
-      if (LidarData)
+      if (Lidar_2_Data)
       {
-        LidarData.print("Lidar 2 distance is: "); LidarData.print(distance);
+        Lidar_2_Data.print("Lidar 2 distance is: "); Lidar_2_Data.print(distance);
         
         //Close the SD Card
-        LidarData.close();
+        Lidar_2_Data.close();
       }
     }
 
      if (Lidar3_newDistance)
     {
-      LidarData = SD.open("Lidar_3_Data.txt", FILE_WRITE);
+      Lidar_3_Data = SD.open("Lidar_3_Data.txt", FILE_WRITE);
 
       //Send the data from the lidar to the text file above
-      if (LidarData)
+      if (Lidar_3_Data)
       {
-        LidarData.print("Lidar 3 distance is: "); LidarData.print(distance);
+        Lidar_3_Data.print("Lidar 3 distance is: "); Lidar_3_Data.print(distance);
         
         //Close the SD Card
-        LidarData.close();
+        Lidar_3_Data.close();
       }
     }
 
      if (Lidar4_newDistance)
     {
-      LidarData = SD.open("Lidar_4_Data.txt", FILE_WRITE);
+      Lidar_4_Data = SD.open("Lidar_4_Data.txt", FILE_WRITE);
 
       //Send the data from the lidar to the text file above
-      if (LidarData)
+      if (Lidar_4_Data)
       {
-        LidarData.print("Lidar 4 distance is: "); LidarData.print(distance);
+        Lidar_4_Data.print("Lidar 4 distance is: "); Lidar_4_Data.print(distance);
         
         //Close the SD Card
-        LidarData.close();
+        Lidar_4_Data.close();
       }
 
       /*Wire.beginTransmission(Other_Address);
