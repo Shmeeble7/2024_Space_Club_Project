@@ -1,14 +1,9 @@
-/* Basic LIDAR functionality test file
-
-   This file can be used to test each of the range settings
-   built into the lidar. They will preform the appropriate type
-   of scan and then display the distance results in the serial monitor.
-   This type of test requires access to the serial monitor and requires
-   a character input to function. For our actual program this can be
-   changed so we dont need to do that. Ive gone through and commented the sample
-   code and tried to add context to what the code is doing. Ive also left any relevant
-   wiring/electrical information provided in the sample code in the file. I'll use asteriks
-   separate any functions to make it easier to see what is where
+/* 
+ *  2024 Space Club Primary Board 
+ *  Created by Ian Bailey and Ryan Hayden for the WVU Tech 2024 Space Club project
+ *  This version of the file should handle running the lidar in continuous mode without additional
+ *  input in the serial monitor and it should properly save data into a files on the built-in SD card.
+ *  This file should handle all 4 Lidar modules but additiona testing may be required
 */
 
 //These are the libraries need
@@ -17,9 +12,14 @@
 #include <Wire.h>
 #include "LIDARLite_v4LED.h"
 
+#define This_Address 30
+#define Other_Address 45
 
-//Our lidar object
-LIDARLite_v4LED myLidarLite;
+//These four objects represent all four of our lidars, 
+LIDARLite_v4LED Lidar1;
+LIDARLite_v4LED Lidar2;
+LIDARLite_v4LED Lidar3;
+LIDARLite_v4LED Lidar4;
 
 #define FAST_I2C
 
@@ -27,23 +27,22 @@ LIDARLite_v4LED myLidarLite;
 #define MonitorPin    3
 #define TriggerPin    2
 
+
 //Initialize the sd card
 int sd = BUILTIN_SDCARD;
 
 //Initialize the data file
 File LidarData;
 
-//LED pin
+//define the LED pin
 const int LightPin =  13;
 
 //This enum datatype is used to hold all the range types simultaneously
-//The GPIO functions work the same but use the GPIO pin on the LIDAR to function
+//The GPIO function worka the same but uses the GPIO pin on the LIDAR to function
 enum rangeType_T
 {
   RANGE_NONE,
-  RANGE_SINGLE,
   RANGE_CONTINUOUS,
-  RANGE_SINGLE_GPIO,
   RANGE_CONTINUOUS_GPIO
 };
 
@@ -66,11 +65,15 @@ void setup()
 #endif
 #endif
 
-  // ----------------------------------------------------------------------
-  // Lights and SD card setup
-  // ----------------------------------------------------------------------
-  //***********************************************************************************************************************************************
-  // initialize the digital pin as an output
+//Define the SDL/SDA pins for the main teensy board
+Wire.setSDA(18);
+Wire.setSCL(19);
+
+// ----------------------------------------------------------------------
+// Lights and SD card setup
+// ----------------------------------------------------------------------
+//***********************************************************************************************************************************************
+// initialize the digital pin as an output
   pinMode(LightPin, OUTPUT);
 
   if (!SD.begin(sd))
@@ -93,10 +96,10 @@ void setup()
     LidarData.close();
   }
 
-  // ----------------------------------------------------------------------
-  // Additional Setup/Info
-  // ----------------------------------------------------------------------
-  //***********************************************************************************************************************************************
+// ----------------------------------------------------------------------
+// Additional Setup/Info
+// ----------------------------------------------------------------------
+//***********************************************************************************************************************************************
 
   // ----------------------------------------------------------------------
   // The LIDAR-Lite v4 LED is strictly a 3.3V system. The Arduino Due is a
@@ -137,7 +140,7 @@ void setup()
   //    acquisition count to a minimum for faster rep rates on very
   //    close targets with high error.
   // ----------------------------------------------------------------------
-  myLidarLite.configure(0);
+  Lidar1.configure(0);
 
 }
 //======================
@@ -146,13 +149,14 @@ void setup()
 //***********************************************************************************************************************************************
 void loop()
 {
-  //despite being in the loop function this little block will only be triggered once due to the while loop down below
+  //despite being in the loop function this block will only be triggered once due to the while loop down below
   uint16_t distance;
-  uint8_t  newDistance;
+  uint8_t  Lidar1_newDistance;
+  uint8_t  Lidar2_newDistance;
+  uint8_t  Lidar3_newDistance;
+  uint8_t  Lidar4_newDistance;
   uint8_t  inputChar;
   rangeType_T rangeMode = RANGE_NONE;
-
-  MenuPrint();
 
   //===================================================================
   // 1) Look for a serial input character to establish RANGE_MODE
@@ -160,47 +164,33 @@ void loop()
   if (Serial.available())
   {
     //  read input character ...
+    Serial.print("Enter 1 for continuous mode or 2 for continuous GPIO mode");
     inputChar = (uint8_t) Serial.read();
 
     // ... and parse
     switch (inputChar)
     {
-      case '1':
-        rangeMode = RANGE_SINGLE;
-        break;
 
-      case '2':
+      case '1':
         rangeMode = RANGE_CONTINUOUS;
         break;
 
-      case '3':
-        rangeMode = RANGE_SINGLE_GPIO;
-        break;
-
-      case '4':
+      case '2':
         rangeMode = RANGE_CONTINUOUS_GPIO;
         break;
 
-      case '5':
+      case '3':
         rangeMode = RANGE_NONE;
-        dumpCorrelationRecord();
         break;
 
       case '.':
         rangeMode = RANGE_NONE;
         break;
 
-      case 'v':
-      case 'V':
-        rangeMode = RANGE_NONE;
-        VersionPrint();
-        break;
-
       case ' ':
       case 0x0D:
       case 0x0A:
-        MenuPrint();
-        rangeMode = RANGE_NONE;
+        rangeMode = RANGE_CONTINUOUS;
         break;
 
       default:
@@ -209,10 +199,9 @@ void loop()
     }
   }
 
-  //This loop
+  //This is where the actual looping occurs
   while (1)
   {
-
 
     //===================================================================
     // 2) Check on mode and operate accordingly
@@ -220,54 +209,102 @@ void loop()
     switch (rangeMode)
     {
       case RANGE_NONE:
-        newDistance = 0;
-        break;
-
-      case RANGE_SINGLE:
-        newDistance = distanceSingle(&distance);
-        rangeMode   = RANGE_NONE;
+        Lidar1_newDistance = 0;
+        Lidar2_newDistance = 0;
+        Lidar3_newDistance = 0;
+        Lidar4_newDistance = 0;
         break;
 
       case RANGE_CONTINUOUS:
-        newDistance = distanceContinuous(&distance);
-        break;
-
-      case RANGE_SINGLE_GPIO:
-        newDistance = distanceSingleGpio(&distance);
-        rangeMode   = RANGE_NONE;
+        Lidar1_newDistance = Lidar1_distanceContinuous(&distance);
+        Lidar2_newDistance = Lidar2_distanceContinuous(&distance);
+        Lidar3_newDistance = Lidar3_distanceContinuous(&distance);
+        Lidar4_newDistance = Lidar4_distanceContinuous(&distance);
         break;
 
       case RANGE_CONTINUOUS_GPIO:
-        newDistance = distanceContinuousGpio(&distance);
+        Lidar1_newDistance = Lidar1_distanceContinuousGpio(&distance);
+        Lidar2_newDistance = Lidar2_distanceContinuousGpio(&distance);
+        Lidar3_newDistance = Lidar3_distanceContinuousGpio(&distance);
+        Lidar4_newDistance = Lidar4_distanceContinuousGpio(&distance);
         break;
 
       default:
-        newDistance = 0;
+        Lidar1_newDistance = 0;
+        Lidar2_newDistance = 0;
+        Lidar3_newDistance = 0;
+        Lidar4_newDistance = 0;
         rangeMode   = RANGE_NONE;
         break;
     }
 
     //===================================================================
-    // 3) When there is new distance data, print it to the serial port
+    // 3) When there is new distance data, print it to file on the SD card
     //===================================================================
-    if (newDistance)
+    if (Lidar1_newDistance)
     {
-      LidarData = SD.open("LidarData.txt", FILE_WRITE);
+      LidarData = SD.open("Lidar_1_Data.txt", FILE_WRITE);
 
-      //Send the data from the gyroscope to the text file above
+      //Send the data from the lidar to the text file above
       if (LidarData)
       {
-        LidarData.print("Distance is: "); LidarData.print(distance);
+        LidarData.print("Lidar 1 distance is: "); LidarData.print(distance);
         
         //Close the SD Card
         LidarData.close();
       }
     }
+
+     if (Lidar2_newDistance)
+    {
+      LidarData = SD.open("Lidar_2_Data.txt", FILE_WRITE);
+
+      //Send the data from the lidar to the text file above
+      if (LidarData)
+      {
+        LidarData.print("Lidar 2 distance is: "); LidarData.print(distance);
+        
+        //Close the SD Card
+        LidarData.close();
+      }
+    }
+
+     if (Lidar3_newDistance)
+    {
+      LidarData = SD.open("Lidar_3_Data.txt", FILE_WRITE);
+
+      //Send the data from the lidar to the text file above
+      if (LidarData)
+      {
+        LidarData.print("Lidar 3 distance is: "); LidarData.print(distance);
+        
+        //Close the SD Card
+        LidarData.close();
+      }
+    }
+
+     if (Lidar4_newDistance)
+    {
+      LidarData = SD.open("Lidar_4_Data.txt", FILE_WRITE);
+
+      //Send the data from the lidar to the text file above
+      if (LidarData)
+      {
+        LidarData.print("Lidar 4 distance is: "); LidarData.print(distance);
+        
+        //Close the SD Card
+        LidarData.close();
+      }
+
+      /*Wire.beginTransmission(Other_Address);
+        Wire.write(newDistance);
+        Wire.endTransmission();*/
+    }
   }
 }
 
 //---------------------------------------------------------------------
-// Menu Print
+// Menu Print Function
 //---------------------------------------------------------------------
 //***********************************************************************************************************************************************
 void MenuPrint(void)
@@ -277,61 +314,14 @@ void MenuPrint(void)
   Serial.println("============================================");
   Serial.println("== LLv4 - Type a single character command ==");
   Serial.println("============================================");
-  Serial.println(" 1 - Single Measurement");
-  Serial.println(" 2 - Continuous Measurement");
-  Serial.println(" 3 - Single Measurement using trigger / monitor pins");
-  Serial.println(" 4 - Continuous Measurement using trigger / monitor pins");
-  Serial.println(" 5 - Dump Correlation Record");
+  Serial.println(" 1 - Continuous Measurement");
+  Serial.println(" 2 - Continuous Measurement using trigger / monitor pins");
+  Serial.println(" 3 - Dump Correlation Record");
   Serial.println(" . - Stop Measurement");
-  Serial.println(" V - Print Version Numbers");
   Serial.println("");
 }
 
-//---------------------------------------------------------------------
-// Read Single Distance Measurement
-//
-// This is the simplest form of taking a measurement. This is a
-// blocking function as it will not return until a range has been
-// taken and a new distance measurement can be read.
-//---------------------------------------------------------------------
-//***********************************************************************************************************************************************
-uint8_t distanceSingle(uint16_t * distance)
-{
-  // 1. Trigger range measurement.
-  myLidarLite.takeRange();
 
-  // 2. Wait for busyFlag to indicate device is idle.
-  myLidarLite.waitForBusy();
-
-  // 3. Read new distance data from device registers
-  *distance = myLidarLite.readDistance();
-
-  return 1;
-}
-
-//---------------------------------------------------------------------
-// Read Single Distance Measurement using Trigger / Monitor Pins
-//
-// This is the simplest form of taking a measurement. This is a
-// blocking function as it will not return until a range has been
-// taken and a new distance measurement can be read. Instead of using
-// the STATUS register to poll for BUSY, this function uses a
-// GPIO pin on the LIDAR-Lite to monitor the BUSY flag.
-//---------------------------------------------------------------------
-//***********************************************************************************************************************************************
-uint8_t distanceSingleGpio(uint16_t * distance)
-{
-  // 1. Trigger range measurement.
-  myLidarLite.takeRangeGpio(TriggerPin, MonitorPin);
-
-  // 2. Wait for busyFlag to indicate device is idle.
-  myLidarLite.waitForBusyGpio(MonitorPin);
-
-  // 3. Read new distance data from device registers
-  *distance = myLidarLite.readDistance();
-
-  return 1;
-}
 
 //---------------------------------------------------------------------
 // Read Continuous Distance Measurements
@@ -345,19 +335,83 @@ uint8_t distanceSingleGpio(uint16_t * distance)
 // distance data from the previous measurement, and returns 1.
 //---------------------------------------------------------------------
 //***********************************************************************************************************************************************
-uint8_t distanceContinuous(uint16_t * distance)
+uint8_t Lidar1_distanceContinuous(uint16_t * distance)
 {
   uint8_t newDistance = 0;
 
   // Check on busyFlag to indicate if device is idle
   // (meaning = it finished the previously triggered measurement)
-  if (myLidarLite.getBusyFlag() == 0)
+  if (Lidar1.getBusyFlag() == 0)
   {
     // Trigger the next range measurement
-    myLidarLite.takeRange();
+    Lidar1.takeRange();
 
     // Read new distance data from device registers
-    *distance = myLidarLite.readDistance();
+    *distance = Lidar1.readDistance();
+
+    // Report to calling function that we have new data
+    newDistance = 1;
+  }
+
+  return newDistance;
+}
+
+
+uint8_t Lidar2_distanceContinuous(uint16_t * distance)
+{
+  uint8_t newDistance = 0;
+
+  // Check on busyFlag to indicate if device is idle
+  // (meaning = it finished the previously triggered measurement)
+  if (Lidar2.getBusyFlag() == 0)
+  {
+    // Trigger the next range measurement
+    Lidar2.takeRange();
+
+    // Read new distance data from device registers
+    *distance = Lidar2.readDistance();
+
+    // Report to calling function that we have new data
+    newDistance = 1;
+  }
+
+  return newDistance;
+}
+
+uint8_t Lidar3_distanceContinuous(uint16_t * distance)
+{
+  uint8_t newDistance = 0;
+
+  // Check on busyFlag to indicate if device is idle
+  // (meaning = it finished the previously triggered measurement)
+  if (Lidar3.getBusyFlag() == 0)
+  {
+    // Trigger the next range measurement
+    Lidar3.takeRange();
+
+    // Read new distance data from device registers
+    *distance = Lidar3.readDistance();
+
+    // Report to calling function that we have new data
+    newDistance = 1;
+  }
+
+  return newDistance;
+}
+
+uint8_t Lidar4_distanceContinuous(uint16_t * distance)
+{
+  uint8_t newDistance = 0;
+
+  // Check on busyFlag to indicate if device is idle
+  // (meaning = it finished the previously triggered measurement)
+  if (Lidar4.getBusyFlag() == 0)
+  {
+    // Trigger the next range measurement
+    Lidar4.takeRange();
+
+    // Read new distance data from device registers
+    *distance = Lidar4.readDistance();
 
     // Report to calling function that we have new data
     newDistance = 1;
@@ -378,19 +432,19 @@ uint8_t distanceContinuous(uint16_t * distance)
 // distance data from the previous measurement, and returns 1.
 //---------------------------------------------------------------------
 //***********************************************************************************************************************************************
-uint8_t distanceContinuousGpio(uint16_t * distance)
+uint8_t Lidar1_distanceContinuousGpio(uint16_t * distance)
 {
   uint8_t newDistance = 0;
 
   // Check on busyFlag to indicate if device is idle
   // (meaning = it finished the previously triggered measurement)
-  if (myLidarLite.getBusyFlagGpio(MonitorPin) == 0)
+  if (Lidar1.getBusyFlagGpio(MonitorPin) == 0)
   {
     // Trigger the next range measurement
-    myLidarLite.takeRangeGpio(TriggerPin, MonitorPin);
+    Lidar1.takeRangeGpio(TriggerPin, MonitorPin);
 
     // Read new distance data from device registers
-    *distance = myLidarLite.readDistance();
+    *distance = Lidar1.readDistance();
 
     // Report to calling function that we have new data
     newDistance = 1;
@@ -399,69 +453,66 @@ uint8_t distanceContinuousGpio(uint16_t * distance)
   return newDistance;
 }
 
-//---------------------------------------------------------------------
-// Print the correlation record for analysis
-//---------------------------------------------------------------------
-//***********************************************************************************************************************************************
-void dumpCorrelationRecord()
+
+uint8_t Lidar2_distanceContinuousGpio(uint16_t * distance)
 {
-  int16_t corrValues[192];
-  uint8_t i;
+  uint8_t newDistance = 0;
 
-  myLidarLite.correlationRecordRead(corrValues);
-
-  for (i = 0 ; i < 192 ; i++)
+  // Check on busyFlag to indicate if device is idle
+  // (meaning = it finished the previously triggered measurement)
+  if (Lidar2.getBusyFlagGpio(MonitorPin) == 0)
   {
-    Serial.print(corrValues[i], DEC);
-    Serial.print(",");
+    // Trigger the next range measurement
+    Lidar2.takeRangeGpio(TriggerPin, MonitorPin);
+
+    // Read new distance data from device registers
+    *distance = Lidar2.readDistance();
+
+    // Report to calling function that we have new data
+    newDistance = 1;
   }
-  Serial.println(" ");
+
+  return newDistance;
 }
 
-//---------------------------------------------------------------------
-void VersionPrint(void)
-//---------------------------------------------------------------------
-//***********************************************************************************************************************************************
+uint8_t Lidar3_distanceContinuousGpio(uint16_t * distance)
 {
-  uint8_t    dataBytes[12];
-  uint8_t  * nrfVerString;
-  uint16_t * lrfVersion;
-  uint8_t  * hwVersion;
-  uint8_t  i;
+  uint8_t newDistance = 0;
 
-  //===========================================
-  // Print nRF Software Version
-  //===========================================
-  myLidarLite.read(0x30, dataBytes, 11, 0x62);
-  nrfVerString = dataBytes;
-  Serial.print("nRF Software Version  - ");
-  for (i = 0 ; i < 11 ; i++)
+  // Check on busyFlag to indicate if device is idle
+  // (meaning = it finished the previously triggered measurement)
+  if (Lidar3.getBusyFlagGpio(MonitorPin) == 0)
   {
-    Serial.write(nrfVerString[i]);
+    // Trigger the next range measurement
+    Lidar3.takeRangeGpio(TriggerPin, MonitorPin);
+
+    // Read new distance data from device registers
+    *distance = Lidar3.readDistance();
+
+    // Report to calling function that we have new data
+    newDistance = 1;
   }
-  Serial.println("");
 
-  //===========================================
-  // Print LRF Firmware Version
-  //===========================================
-  myLidarLite.read(0x72, dataBytes, 2, 0x62);
-  lrfVersion = (uint16_t *) dataBytes;
-  Serial.print("LRF Firmware Version  - v");
-  Serial.print((*lrfVersion) / 100);
-  Serial.print(".");
-  Serial.print((*lrfVersion) % 100);
-  Serial.println("");
+  return newDistance;
+}
 
-  //===========================================
-  // Print Hardware Version
-  //===========================================
-  myLidarLite.read(0xE1, dataBytes, 1, 0x62);
-  hwVersion = dataBytes;
-  Serial.print("Hardware Version      - ");
-  switch (*hwVersion)
+uint8_t Lidar4_distanceContinuousGpio(uint16_t * distance)
+{
+  uint8_t newDistance = 0;
+
+  // Check on busyFlag to indicate if device is idle
+  // (meaning = it finished the previously triggered measurement)
+  if (Lidar4.getBusyFlagGpio(MonitorPin) == 0)
   {
-    case 16 : Serial.println("RevA"); break;
-    case  8 : Serial.println("RevB"); break;
-    default : Serial.println("????"); break;
+    // Trigger the next range measurement
+    Lidar4.takeRangeGpio(TriggerPin, MonitorPin);
+
+    // Read new distance data from device registers
+    *distance = Lidar4.readDistance();
+
+    // Report to calling function that we have new data
+    newDistance = 1;
   }
+
+  return newDistance;
 }
