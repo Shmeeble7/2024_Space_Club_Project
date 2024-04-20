@@ -133,53 +133,9 @@ void loop()
     //===================================================================
     
       //  read input character ...
-      inputChar = (uint8_t) 2;
+      //inputChar = (uint8_t) 2;
 
-      // ... and parse
-      switch (inputChar)
-      {
-        case '1':
-          rangeMode = RANGE_SINGLE;
-          break;
-
-        case '2':
-          rangeMode = RANGE_CONTINUOUS;
-          break;
-
-        case '3':
-          rangeMode = RANGE_SINGLE_GPIO;
-          break;
-
-        case '4':
-          rangeMode = RANGE_CONTINUOUS_GPIO;
-          break;
-
-        case '5':
-          rangeMode = RANGE_NONE;
-          dumpCorrelationRecord();
-          break;
-
-        case '.':
-          rangeMode = RANGE_NONE;
-          break;
-
-        case 'v':
-        case 'V':
-          rangeMode = RANGE_NONE;
-          VersionPrint();
-          break;
-
-        case ' ':
-        case 0x0D:
-        case 0x0A:
-          MenuPrint();
-          rangeMode = RANGE_NONE;
-          break;
-
-        default:
-          rangeMode = RANGE_NONE;
-          break;
-      }
+        rangeMode = RANGE_CONTINUOUS;
     
 
     //===================================================================
