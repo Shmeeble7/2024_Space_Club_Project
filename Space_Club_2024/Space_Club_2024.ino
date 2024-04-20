@@ -6,6 +6,8 @@
  *  This file should handle all 4 Lidar modules but additiona testing may be required
 */
 
+//M Test v.1
+
 //These are the libraries need
 #include <SD.h>
 #include <stdint.h>
@@ -15,7 +17,7 @@
 #define This_Address 30
 #define Other_Address 45
 
-byte serialNumber[2];
+/*byte serialNumber[2];
 
 //Some address for I2C manipulation
 char UNIT_ID_HIGH = 0x16;
@@ -23,7 +25,7 @@ char UNIT_ID_LOW = 0x17;
 char I2C_ID_HIGH = 0x18;
 char I2C_ID_LOW = 0x19;
 char I2C_SEC_ADDR = 0x1a;
-char I2C_CONFIG = 0x1e;
+char I2C_CONFIG = 0x1e;*/
 
 //The I2C addresses were hoping to use
 char LIDAR_1_ADDR = 0x64;
@@ -93,9 +95,9 @@ Lidar3.setI2Caddr(LIDAR_3_ADDR, 1, LIDAR_3_ADDR);
 Lidar4.setI2Caddr(LIDAR_4_ADDR, 1, LIDAR_4_ADDR);
 
 
-//Define the SDL/SDA pins for the main teensy board
+/*//Define the SDL/SDA pins for the main teensy board
 Wire.setSDA(18);
-Wire.setSCL(19);
+Wire.setSCL(19);*/
 
 // ----------------------------------------------------------------------
 // Lights and SD card setup
@@ -214,43 +216,7 @@ void loop()
   uint8_t  inputChar;
   rangeType_T rangeMode = RANGE_NONE;
 
-  //===================================================================
-  // 1) Look for a serial input character to establish RANGE_MODE
-  //===================================================================
   
-    //  read input character ...
-    inputChar = (uint8_t) 1;
-
-    // ... and parse
-    switch (inputChar)
-    {
-
-      case '1':
-        rangeMode = RANGE_CONTINUOUS;
-        break;
-
-      case '2':
-        rangeMode = RANGE_CONTINUOUS_GPIO;
-        break;
-
-      case '3':
-        rangeMode = RANGE_NONE;
-        break;
-
-      case '.':
-        rangeMode = RANGE_NONE;
-        break;
-
-      case ' ':
-      case 0x0D:
-      case 0x0A:
-        rangeMode = RANGE_CONTINUOUS;
-        break;
-
-      default:
-        rangeMode = RANGE_NONE;
-        break;
-    }
 
   //This is where the actual looping occurs
   while (1)
@@ -259,6 +225,9 @@ void loop()
     //===================================================================
     // 2) Check on mode and operate accordingly
     //===================================================================
+
+    rangeMode = RANGE_CONTINUOUS;
+    
     switch (rangeMode)
     {
       case RANGE_NONE:
@@ -301,7 +270,7 @@ void loop()
       //Send the data from the lidar to the text file above
       if (Lidar_1_Data)
       {
-        Lidar_1_Data.print("Lidar 1 distance is: "); Lidar_1_Data.print(distance);
+        Lidar_1_Data.print("Lidar 1 distance is: "); Lidar_1_Data.print(Lidar1_newDistance); Lidar_1_Data.println("cm");
         
         //Close the SD Card
         Lidar_1_Data.close();
@@ -315,7 +284,7 @@ void loop()
       //Send the data from the lidar to the text file above
       if (Lidar_2_Data)
       {
-        Lidar_2_Data.print("Lidar 2 distance is: "); Lidar_2_Data.print(distance);
+        Lidar_2_Data.print("Lidar 2 distance is: "); Lidar_2_Data.print(Lidar2_newDistance); Lidar_2_Data.println("cm");
         
         //Close the SD Card
         Lidar_2_Data.close();
@@ -329,7 +298,7 @@ void loop()
       //Send the data from the lidar to the text file above
       if (Lidar_3_Data)
       {
-        Lidar_3_Data.print("Lidar 3 distance is: "); Lidar_3_Data.print(distance);
+        Lidar_3_Data.print("Lidar 3 distance is: "); Lidar_3_Data.print(Lidar3_newDistance); Lidar_3_Data.println("cm");
         
         //Close the SD Card
         Lidar_3_Data.close();
@@ -343,7 +312,7 @@ void loop()
       //Send the data from the lidar to the text file above
       if (Lidar_4_Data)
       {
-        Lidar_4_Data.print("Lidar 4 distance is: "); Lidar_4_Data.print(distance);
+        Lidar_4_Data.print("Lidar 4 distance is: "); Lidar_4_Data.print(Lidar4_newDistance); Lidar_4_Data.println("cm");
         
         //Close the SD Card
         Lidar_4_Data.close();
