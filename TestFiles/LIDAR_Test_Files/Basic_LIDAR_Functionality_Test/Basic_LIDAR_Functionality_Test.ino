@@ -11,7 +11,7 @@
  * separate any functions to make it easier to see what is where
  */
 
-//Test v.2
+//Test v.3
  
 //These are the libraries need
 #include <SD.h>
@@ -194,14 +194,14 @@ void loop()
     //===================================================================
     if (newDistance)
     {
-      Serial.print("Lidar distance is: "); Serial.print(distance);
+      //Serial.print("Lidar distance is: "); Serial.print(distance);
       
       LIDAR_Functionality_Test_Data = SD.open("Lidar_Functionality_Test_Data.txt", FILE_WRITE);
 
       //Send the data from the lidar to the text file above
       if (LIDAR_Functionality_Test_Data)
       {
-        LIDAR_Functionality_Test_Data.print("Lidar distance is: "); LIDAR_Functionality_Test_Data.print(distance);
+        LIDAR_Functionality_Test_Data.print("Lidar distance is: "); LIDAR_Functionality_Test_Data.print(distance); LIDAR_Functionality_Test_Data.println("cm");
         
         //Close the SD Card
         LIDAR_Functionality_Test_Data.close();
