@@ -176,6 +176,8 @@ void loop()
     //===================================================================
     if (newDistance)
     {
+      Serial.print("Lidar distance is: "); Serial.print(distance);
+      
       LIDAR_Functionality_Test_Data = SD.open("Lidar_Functionality_Test_Data.txt", FILE_WRITE);
 
       //Send the data from the lidar to the text file above
