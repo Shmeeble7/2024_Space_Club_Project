@@ -10,6 +10,8 @@
  * wiring/electrical information provided in the sample code in the file. I'll use asteriks
  * separate any functions to make it easier to see what is where
  */
+
+//Test v.2
  
 //These are the libraries need
 #include <SD.h>
@@ -23,6 +25,8 @@ LIDARLite_v4LED myLidarLite;
 #define FAST_I2C
 
 int sd = BUILTIN_SDCARD;
+
+const int LightPin = 13;
 
 File LIDAR_Functionality_Test_Data;
 
@@ -49,6 +53,20 @@ void setup()
 {
   // Initialize Arduino serial port (for display of ASCII output to PC)
   Serial.begin(115200);
+
+  pinMode(LightPin, OUTPUT);
+
+  if(!SD.begin(sd))
+  {
+    //This will blink the built-in LED once every second if the SD card fails to initialize
+    while (1)
+    {
+      digitalWrite(LightPin, HIGH);
+      delay(1000);
+      digitalWrite(LightPin, LOW);
+      delay(1000);
+    }
+  }
 
   // Initialize Arduino I2C (for communication to LidarLite)
   Wire.begin();
