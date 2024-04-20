@@ -121,15 +121,15 @@ Wire.setSCL(19);
 
   if (Lidar_1_Data)
   {
-    Lidar_1_Data.println("Lidar_1_File failed to initialize");
+    Lidar_1_Data.println("Lidar_1_File successfully initialized");
     Lidar_1_Data.close();
   }
 
   Lidar_2_Data = SD.open("Lidar_2_Data.txt", FILE_WRITE);
 
-  if (Lidar_2_Data)
+  if (!Lidar_2_Data)
   {
-    Lidar_2_Data.println("Lidar_2_File failed to initialize");
+    Lidar_2_Data.println("Lidar_2_File successfully initialized");
     Lidar_2_Data.close();
   }
 
@@ -137,7 +137,7 @@ Wire.setSCL(19);
 
   if (Lidar_3_Data)
   {
-    Lidar_3_Data.println("Lidar_3_File failed to initialize");
+    Lidar_3_Data.println("Lidar_3_File successfully initialized");
     Lidar_3_Data.close();
   }
 
@@ -145,7 +145,7 @@ Wire.setSCL(19);
 
   if (Lidar_4_Data)
   {
-    Lidar_4_Data.println("Lidar_4_File failed to initialize");
+    Lidar_4_Data.println("Lidar_4_File successfully initialized");
     Lidar_4_Data.close();
   }
 
@@ -217,12 +217,9 @@ void loop()
   //===================================================================
   // 1) Look for a serial input character to establish RANGE_MODE
   //===================================================================
-  if (Serial.available())
-  {
+  
     //  read input character ...
-    //Serial.print("Enter 1 for continuous mode or 2 for continuous GPIO mode");
-    //inputChar = (uint8_t) Serial.read();
-    inputChar = '1';
+    inputChar = (uint8_t) 1;
 
     // ... and parse
     switch (inputChar)
@@ -254,7 +251,6 @@ void loop()
         rangeMode = RANGE_NONE;
         break;
     }
-  }
 
   //This is where the actual looping occurs
   while (1)

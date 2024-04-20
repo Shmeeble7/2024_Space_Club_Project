@@ -12,6 +12,7 @@
  */
  
 //These are the libraries need
+#include <SD.h>
 #include <stdint.h>
 #include <Wire.h>
 #include "LIDARLite_v4LED.h"
@@ -20,6 +21,10 @@
 LIDARLite_v4LED myLidarLite;
 
 #define FAST_I2C
+
+int sd = BUILTIN_SDCARD;
+
+File LIDAR_Functionality_Test_Data;
 
 //define which pins are the monitor and trigger pins
 #define MonitorPin    3
@@ -54,6 +59,15 @@ void setup()
   TWBR = ((F_CPU / 400000UL) - 16) / 2; // Set I2C frequency to 400kHz
 #endif
 #endif
+
+
+LIDAR_Functionality_Test_Data = SD.open("Lidar_1_Data.txt", FILE_WRITE);
+
+  if (LIDAR_Functionality_Test_Data)
+  {
+    LIDAR_Functionality_Test_Data.println("Functionality Test File Successfully Initialized");
+    LIDAR_Functionality_Test_Data.close();
+  }
 
   // ----------------------------------------------------------------------
   // The LIDAR-Lite v4 LED is strictly a 3.3V system. The Arduino Due is a
@@ -109,7 +123,7 @@ void loop()
   uint8_t  inputChar;
   rangeType_T rangeMode = RANGE_NONE;
 
-  MenuPrint();
+  //MenuPrint();
 
   //Thats because of this continuous loop
   while (1)
@@ -117,10 +131,9 @@ void loop()
     //===================================================================
     // 1) Each time through the loop, look for a serial input character
     //===================================================================
-    if (Serial.available())
-    {
+    
       //  read input character ...
-      inputChar = (uint8_t) Serial.read();
+      inputChar = (uint8_t) 2;
 
       // ... and parse
       switch (inputChar)
@@ -167,7 +180,7 @@ void loop()
           rangeMode = RANGE_NONE;
           break;
       }
-    }
+    
 
     //===================================================================
     // 2) Check on mode and operate accordingly
@@ -207,8 +220,16 @@ void loop()
     //===================================================================
     if (newDistance)
     {
-      //We could easily change this command to send the distance to a textfile
-      Serial.println(distance);
+      LIDAR_Functionality_Test_Data = SD.open("Lidar_Functionality_Test_Data.txt", FILE_WRITE);
+
+      //Send the data from the lidar to the text file above
+      if (LIDAR_Functionality_Test_Data)
+      {
+        LIDAR_Functionality_Test_Data.print("Lidar distance is: "); LIDAR_Functionality_Test_Data.print(distance);
+        
+        //Close the SD Card
+        LIDAR_Functionality_Test_Data.close();
+      }
     }
   }
 }
