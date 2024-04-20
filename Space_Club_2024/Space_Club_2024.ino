@@ -15,18 +15,34 @@
 #define This_Address 30
 #define Other_Address 45
 
+byte serialNumber[2];
+
+//Some address for I2C manipulation
+char UNIT_ID_HIGH = 0x16;
+char UNIT_ID_LOW = 0x17;
+char I2C_ID_HIGH = 0x18;
+char I2C_ID_LOW = 0x19;
+char I2C_SEC_ADDR = 0x1a;
+char I2C_CONFIG = 0x1e;
+
+//The I2C addresses were hoping to use
+char LIDAR_1_ADDR = 0x64;
+char LIDAR_2_ADDR = 0x74;
+char LIDAR_3_ADDR = 0x75;
+char LIDAR_4_ADDR = 0x76;
+
 //These four objects represent all four of our lidars, 
 LIDARLite_v4LED Lidar1;
 LIDARLite_v4LED Lidar2;
 LIDARLite_v4LED Lidar3;
 LIDARLite_v4LED Lidar4;
+ 
 
 #define FAST_I2C
 
 //define which pins are the monitor and trigger pins
 #define MonitorPin    3
 #define TriggerPin    2
-
 
 //Initialize the sd card
 int sd = BUILTIN_SDCARD;
@@ -69,6 +85,14 @@ void setup()
 #endif
 #endif
 
+//Set the first lidar I2C address
+//*************************************************************************************************************************************************
+Lidar1.setI2Caddr(LIDAR_1_ADDR, 1, LIDAR_1_ADDR);
+Lidar2.setI2Caddr(LIDAR_2_ADDR, 1, LIDAR_2_ADDR);
+Lidar3.setI2Caddr(LIDAR_3_ADDR, 1, LIDAR_3_ADDR);
+Lidar4.setI2Caddr(LIDAR_4_ADDR, 1, LIDAR_4_ADDR);
+
+
 //Define the SDL/SDA pins for the main teensy board
 Wire.setSDA(18);
 Wire.setSCL(19);
@@ -91,6 +115,7 @@ Wire.setSCL(19);
       delay(1000);
     }
   }
+  
 
   Lidar_1_Data = SD.open("Lidar_1_Data.txt", FILE_WRITE);
 
@@ -169,6 +194,9 @@ Wire.setSCL(19);
   //    close targets with high error.
   // ----------------------------------------------------------------------
   Lidar1.configure(0);
+  Lidar2.configure(0);
+  Lidar3.configure(0);
+  Lidar4.configure(0);
 
 }
 //======================
@@ -192,8 +220,9 @@ void loop()
   if (Serial.available())
   {
     //  read input character ...
-    Serial.print("Enter 1 for continuous mode or 2 for continuous GPIO mode");
-    inputChar = (uint8_t) Serial.read();
+    //Serial.print("Enter 1 for continuous mode or 2 for continuous GPIO mode");
+    //inputChar = (uint8_t) Serial.read();
+    inputChar = '1';
 
     // ... and parse
     switch (inputChar)
