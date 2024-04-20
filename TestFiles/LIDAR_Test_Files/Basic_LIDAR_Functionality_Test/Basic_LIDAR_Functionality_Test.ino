@@ -61,7 +61,7 @@ void setup()
 #endif
 
 
-LIDAR_Functionality_Test_Data = SD.open("Lidar_1_Data.txt", FILE_WRITE);
+LIDAR_Functionality_Test_Data = SD.open("Lidar_Functionality_Test_Data.txt", FILE_WRITE);
 
   if (LIDAR_Functionality_Test_Data)
   {
