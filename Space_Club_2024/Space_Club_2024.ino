@@ -6,7 +6,7 @@
  *  This file should handle all 4 Lidar modules but additiona testing may be required
 */
 
-//M Test v.1
+//Functional version as of 4/23/24
 
 //These are the libraries need
 #include <SD.h>
@@ -14,18 +14,9 @@
 #include <Wire.h>
 #include "LIDARLite_v4LED.h"
 
+//The i2c addresses for each board, used for sending data to each other
 #define This_Address 30
 #define Other_Address 45
-
-/*byte serialNumber[2];
-
-//Some address for I2C manipulation
-char UNIT_ID_HIGH = 0x16;
-char UNIT_ID_LOW = 0x17;
-char I2C_ID_HIGH = 0x18;
-char I2C_ID_LOW = 0x19;
-char I2C_SEC_ADDR = 0x1a;
-char I2C_CONFIG = 0x1e;*/
 
 //The I2C addresses were hoping to use
 char LIDAR_1_ADDR = 0x64;
@@ -94,10 +85,6 @@ Lidar2.setI2Caddr(LIDAR_2_ADDR, 1, LIDAR_2_ADDR);
 Lidar3.setI2Caddr(LIDAR_3_ADDR, 1, LIDAR_3_ADDR);
 Lidar4.setI2Caddr(LIDAR_4_ADDR, 1, LIDAR_4_ADDR);
 
-
-/*//Define the SDL/SDA pins for the main teensy board
-Wire.setSDA(18);
-Wire.setSCL(19);*/
 
 // ----------------------------------------------------------------------
 // Lights and SD card setup
@@ -223,11 +210,12 @@ void loop()
   {
 
     //===================================================================
-    // 2) Check on mode and operate accordingly
+    // 2) Call the distance methods for each Lidar
     //===================================================================
 
     rangeMode = RANGE_CONTINUOUS;
-    
+
+    //Im only keeping this as a switch incase we want to stop recording data temporarily for some reason
     switch (rangeMode)
     {
       case RANGE_NONE:
@@ -244,19 +232,13 @@ void loop()
         Lidar4_newDistance = Lidar4_distanceContinuous(&distance);
         break;
 
-      case RANGE_CONTINUOUS_GPIO:
-        Lidar1_newDistance = Lidar1_distanceContinuousGpio(&distance);
-        Lidar2_newDistance = Lidar2_distanceContinuousGpio(&distance);
-        Lidar3_newDistance = Lidar3_distanceContinuousGpio(&distance);
-        Lidar4_newDistance = Lidar4_distanceContinuousGpio(&distance);
-        break;
-
       default:
-        Lidar1_newDistance = 0;
-        Lidar2_newDistance = 0;
-        Lidar3_newDistance = 0;
-        Lidar4_newDistance = 0;
-        rangeMode   = RANGE_NONE;
+        //If this activates there is something wrong
+        Lidar1_newDistance = -1000;
+        Lidar2_newDistance = -1000;
+        Lidar3_newDistance = -1000;
+        Lidar4_newDistance = -1000;
+        rangeMode = RANGE_NONE;
         break;
     }
 
@@ -369,10 +351,8 @@ uint8_t Lidar1_distanceContinuous(uint16_t * distance)
     Lidar1.takeRange();
 
     // Read new distance data from device registers
-    *distance = Lidar1.readDistance();
+    newDistance = Lidar1.readDistance();
 
-    // Report to calling function that we have new data
-    newDistance = 1;
   }
 
   return newDistance;
@@ -391,10 +371,8 @@ uint8_t Lidar2_distanceContinuous(uint16_t * distance)
     Lidar2.takeRange();
 
     // Read new distance data from device registers
-    *distance = Lidar2.readDistance();
+    newDistance = Lidar2.readDistance();
 
-    // Report to calling function that we have new data
-    newDistance = 1;
   }
 
   return newDistance;
@@ -412,10 +390,8 @@ uint8_t Lidar3_distanceContinuous(uint16_t * distance)
     Lidar3.takeRange();
 
     // Read new distance data from device registers
-    *distance = Lidar3.readDistance();
+    newDistance = Lidar3.readDistance();
 
-    // Report to calling function that we have new data
-    newDistance = 1;
   }
 
   return newDistance;
@@ -433,107 +409,8 @@ uint8_t Lidar4_distanceContinuous(uint16_t * distance)
     Lidar4.takeRange();
 
     // Read new distance data from device registers
-    *distance = Lidar4.readDistance();
+    newDistance = Lidar4.readDistance();
 
-    // Report to calling function that we have new data
-    newDistance = 1;
-  }
-
-  return newDistance;
-}
-
-//---------------------------------------------------------------------
-// Read Continuous Distance Measurements using Trigger / Monitor Pins
-//
-// The most recent distance measurement can always be read from
-// device registers. Polling for the BUSY flag using the Monitor Pin
-// can alert the user that the distance measurement is new
-// and that the next measurement can be initiated. If the device is
-// BUSY this function does nothing and returns 0. If the device is
-// NOT BUSY this function triggers the next measurement, reads the
-// distance data from the previous measurement, and returns 1.
-//---------------------------------------------------------------------
-//***********************************************************************************************************************************************
-uint8_t Lidar1_distanceContinuousGpio(uint16_t * distance)
-{
-  uint8_t newDistance = 0;
-
-  // Check on busyFlag to indicate if device is idle
-  // (meaning = it finished the previously triggered measurement)
-  if (Lidar1.getBusyFlagGpio(MonitorPin) == 0)
-  {
-    // Trigger the next range measurement
-    Lidar1.takeRangeGpio(TriggerPin, MonitorPin);
-
-    // Read new distance data from device registers
-    *distance = Lidar1.readDistance();
-
-    // Report to calling function that we have new data
-    newDistance = 1;
-  }
-
-  return newDistance;
-}
-
-
-uint8_t Lidar2_distanceContinuousGpio(uint16_t * distance)
-{
-  uint8_t newDistance = 0;
-
-  // Check on busyFlag to indicate if device is idle
-  // (meaning = it finished the previously triggered measurement)
-  if (Lidar2.getBusyFlagGpio(MonitorPin) == 0)
-  {
-    // Trigger the next range measurement
-    Lidar2.takeRangeGpio(TriggerPin, MonitorPin);
-
-    // Read new distance data from device registers
-    *distance = Lidar2.readDistance();
-
-    // Report to calling function that we have new data
-    newDistance = 1;
-  }
-
-  return newDistance;
-}
-
-uint8_t Lidar3_distanceContinuousGpio(uint16_t * distance)
-{
-  uint8_t newDistance = 0;
-
-  // Check on busyFlag to indicate if device is idle
-  // (meaning = it finished the previously triggered measurement)
-  if (Lidar3.getBusyFlagGpio(MonitorPin) == 0)
-  {
-    // Trigger the next range measurement
-    Lidar3.takeRangeGpio(TriggerPin, MonitorPin);
-
-    // Read new distance data from device registers
-    *distance = Lidar3.readDistance();
-
-    // Report to calling function that we have new data
-    newDistance = 1;
-  }
-
-  return newDistance;
-}
-
-uint8_t Lidar4_distanceContinuousGpio(uint16_t * distance)
-{
-  uint8_t newDistance = 0;
-
-  // Check on busyFlag to indicate if device is idle
-  // (meaning = it finished the previously triggered measurement)
-  if (Lidar4.getBusyFlagGpio(MonitorPin) == 0)
-  {
-    // Trigger the next range measurement
-    Lidar4.takeRangeGpio(TriggerPin, MonitorPin);
-
-    // Read new distance data from device registers
-    *distance = Lidar4.readDistance();
-
-    // Report to calling function that we have new data
-    newDistance = 1;
   }
 
   return newDistance;
