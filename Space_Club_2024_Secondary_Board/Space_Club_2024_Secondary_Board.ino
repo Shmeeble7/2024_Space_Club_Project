@@ -38,13 +38,20 @@ const int LightPin =  13;
 
 //The file object for our SD card
 File SensorData;
+File Secondary_Board_Lidar_Data;
 
 #define This_Address 45
 #define Other_Address 30
 
+//These two variables handle the data recpetion from the main board
+volatile char Buffer[64];
+volatile boolean Data_Recieved;
+
 //***************************************************************************************************************************
 void setup()
 {
+
+  Wire.begin(This_Address);
 
   //Light setup Sequence
 
@@ -173,6 +180,8 @@ void setup()
     SensorData.println("Magnetometer initialization successful");
     SensorData.close();
   }
+
+  Wire.onReceive(Handle_LIDAR_Data);
 }
 //*********************************************************************************************************************************************
 void loop()
@@ -282,13 +291,34 @@ void loop()
     SensorData.close();
   }
 
-
-  /*Wire.begin(other_address);
-  Wire.onReceive(HandleLIDARData);
-  if(flag == false)
+  if(Data_Recieved)
   {
-    Serial.println("Error in transmitting data"); 
-  }*/
+    Secondary_Board_Lidar_Data = SD.open("Lidar_Distance_Data.txt", FILE_WRITE);
+
+    if (Secondary_Board_Lidar_Data)
+    {
+      for(int i = 0; i < 64; i++)
+      {
+      Secondary_Board_Lidar_Data.print(Buffer[i]);
+      }
+      Secondary_Board_Lidar_Data.print(" T: ");
+      Secondary_Board_Lidar_Data.println(millis() / 1000.0);
+      Secondary_Board_Lidar_Data.close();
+    }
+    Data_Recieved = false;
+  }
+  else
+  {
+    Secondary_Board_Lidar_Data = SD.open("Lidar_Distance_Data.txt", FILE_WRITE);
+
+    if (Secondary_Board_Lidar_Data)
+    {
+      //used for testing when data isn't being recieved
+      //Secondary_Board_Lidar_Data.println("No Lidar data recieved");
+      Secondary_Board_Lidar_Data.close();
+    }
+  }
+  
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   //This will turn the built-in LED on with no blinking if everything is initialized and data is being written
@@ -296,10 +326,12 @@ void loop()
 
 }
 
-//This method is a work in progress
-void HandleLIDARData(int Bytes)
+//This method will handle incoming data from the lidar
+void Handle_LIDAR_Data(int Bytes)
 {
-  
-  int temp = Wire.read();
-  flag == true;
+ for(int i = 0; i < Bytes; i++)
+ {
+  Buffer[i] = Wire.read();
+ }
+ Data_Recieved = true; 
 }

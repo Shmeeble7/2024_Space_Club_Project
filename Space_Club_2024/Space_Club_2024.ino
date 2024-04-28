@@ -29,7 +29,6 @@ LIDARLite_v4LED Lidar1;
 LIDARLite_v4LED Lidar2;
 LIDARLite_v4LED Lidar3;
 LIDARLite_v4LED Lidar4;
- 
 
 #define FAST_I2C
 
@@ -40,7 +39,7 @@ LIDARLite_v4LED Lidar4;
 //Initialize the sd card
 int sd = BUILTIN_SDCARD;
 
-//Initialize the data file
+//Initialize the data files, these are only used when we run the board by itself, mainly for testing purposes
 File Lidar_1_Data;
 File Lidar_2_Data;
 File Lidar_3_Data;
@@ -201,6 +200,7 @@ void loop()
   uint8_t  Lidar3_newDistance;
   uint8_t  Lidar4_newDistance;
   uint8_t  inputChar;
+
   rangeType_T rangeMode = RANGE_NONE;
 
   
@@ -247,7 +247,11 @@ void loop()
     //===================================================================
     if (Lidar1_newDistance)
     {
-      Lidar_1_Data = SD.open("Lidar_1_Data.txt", FILE_WRITE);
+      
+      //=========================================================================================
+      // This comment block can be used to get the Lidar data when running the file in solo mode
+      //=========================================================================================
+      /*Lidar_1_Data = SD.open("Lidar_1_Data.txt", FILE_WRITE);
 
       //Send the data from the lidar to the text file above
       if (Lidar_1_Data)
@@ -256,12 +260,23 @@ void loop()
         
         //Close the SD Card
         Lidar_1_Data.close();
-      }
+      }*/
+      
+      String Lidar_1_str = "Lidar 1 distance is: ";
+      Lidar_1_str.append(Lidar1_newDistance);
+
+      Wire.beginTransmission(Other_Address);
+      Wire.write(Lidar_1_str.c_str());
+      Wire.endTransmission();
     }
 
      if (Lidar2_newDistance)
     {
-      Lidar_2_Data = SD.open("Lidar_2_Data.txt", FILE_WRITE);
+
+      //=========================================================================================
+      // This comment block can be used to get the Lidar data when running the file in solo mode
+      //=========================================================================================
+      /*Lidar_2_Data = SD.open("Lidar_2_Data.txt", FILE_WRITE);
 
       //Send the data from the lidar to the text file above
       if (Lidar_2_Data)
@@ -270,12 +285,23 @@ void loop()
         
         //Close the SD Card
         Lidar_2_Data.close();
-      }
+      }*/
+      
+      String Lidar_2_str = "Lidar 2 distance is: ";
+      Lidar_2_str.append(Lidar2_newDistance);
+
+      Wire.beginTransmission(Other_Address);
+      Wire.write(Lidar_2_str.c_str());
+      Wire.endTransmission();
     }
 
      if (Lidar3_newDistance)
     {
-      Lidar_3_Data = SD.open("Lidar_3_Data.txt", FILE_WRITE);
+
+      //=========================================================================================
+      // This comment block can be used to get the Lidar data when running the file in solo mode
+      //=========================================================================================
+      /*Lidar_3_Data = SD.open("Lidar_3_Data.txt", FILE_WRITE);
 
       //Send the data from the lidar to the text file above
       if (Lidar_3_Data)
@@ -284,12 +310,23 @@ void loop()
         
         //Close the SD Card
         Lidar_3_Data.close();
-      }
+      }*/
+
+      String Lidar_3_str = "Lidar 3 distance is: ";
+      Lidar_3_str.append(Lidar3_newDistance);
+
+      Wire.beginTransmission(Other_Address);
+      Wire.write(Lidar_3_str.c_str());
+      Wire.endTransmission();
     }
 
      if (Lidar4_newDistance)
     {
-      Lidar_4_Data = SD.open("Lidar_4_Data.txt", FILE_WRITE);
+
+      //=========================================================================================
+      // This comment block can be used to get the Lidar data when running the file in solo mode
+      //=========================================================================================
+      /*Lidar_4_Data = SD.open("Lidar_4_Data.txt", FILE_WRITE);
 
       //Send the data from the lidar to the text file above
       if (Lidar_4_Data)
@@ -298,11 +335,14 @@ void loop()
         
         //Close the SD Card
         Lidar_4_Data.close();
-      }
+      }*/
+      
+      String Lidar_4_str = "Lidar 4 distance is: ";
+      Lidar_4_str.append(Lidar4_newDistance);
 
-      /*Wire.beginTransmission(Other_Address);
-        Wire.write(newDistance);
-        Wire.endTransmission();*/
+      Wire.beginTransmission(Other_Address);
+      Wire.write(Lidar_4_str.c_str());
+      Wire.endTransmission();
     }
   }
 }
