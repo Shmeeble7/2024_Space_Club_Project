@@ -314,7 +314,7 @@ void loop()
     if (Secondary_Board_Lidar_Data)
     {
       //used for testing when data isn't being recieved
-      //Secondary_Board_Lidar_Data.println("No Lidar data recieved");
+      Secondary_Board_Lidar_Data.println("No Lidar data recieved");
       Secondary_Board_Lidar_Data.close();
     }
   }
