@@ -17,13 +17,14 @@ void loop()
   delay(500);
   digitalWrite(LightPin, LOW);
   delay(500);
+  
   Wire.beginTransmission(45);
+  
   String str = "Testing Run";
   str.concat(x);
   Wire.write(str.c_str());
-  String str2 = "Testing_Run";
-  str2.concat(x);
-  Wire.write(str2.c_str());
+  
   x++;
+  
   Wire.endTransmission();
 }

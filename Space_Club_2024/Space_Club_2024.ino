@@ -3,7 +3,7 @@
  *  Created by Ian Bailey and Ryan Hayden for the WVU Tech 2024 Space Club project
  *  This version of the file should handle running the lidar in continuous mode without additional
  *  input in the serial monitor and it should properly save data into a files on the built-in SD card.
- *  This file should handle all 4 Lidar modules but additiona testing may be required
+ *  This file should handle all 4 Lidar modules but additional testing may be required
 */
 
 //Functional version as of 4/23/24
@@ -61,7 +61,7 @@ enum rangeType_T
 //==========================
 //Setup Function
 //==========================
-//***********************************************************************************************************************************************
+//*************************************************************************************************************************************************************************
 void setup()
 {
   // Initialize Arduino serial port (for display of ASCII output to PC)
@@ -78,7 +78,7 @@ void setup()
 #endif
 
 //Set the first lidar I2C address
-//*************************************************************************************************************************************************
+//*************************************************************************************************************************************************************************
 Lidar1.setI2Caddr(LIDAR_1_ADDR, 1, LIDAR_1_ADDR);
 Lidar2.setI2Caddr(LIDAR_2_ADDR, 1, LIDAR_2_ADDR);
 Lidar3.setI2Caddr(LIDAR_3_ADDR, 1, LIDAR_3_ADDR);
@@ -88,7 +88,7 @@ Lidar4.setI2Caddr(LIDAR_4_ADDR, 1, LIDAR_4_ADDR);
 // ----------------------------------------------------------------------
 // Lights and SD card setup
 // ----------------------------------------------------------------------
-//***********************************************************************************************************************************************
+//*************************************************************************************************************************************************************************
 // initialize the digital pin as an output
   pinMode(LightPin, OUTPUT);
 
@@ -104,7 +104,8 @@ Lidar4.setI2Caddr(LIDAR_4_ADDR, 1, LIDAR_4_ADDR);
     }
   }
   
-
+//These will check if the LIDAR data files initialize properly, we dont need these for the actual project
+//since they are only used in single board testing. Ive left these lines uncommented since they shouldnt cause issues.
   Lidar_1_Data = SD.open("Lidar_1_Data.txt", FILE_WRITE);
 
   if (Lidar_1_Data)
@@ -140,7 +141,7 @@ Lidar4.setI2Caddr(LIDAR_4_ADDR, 1, LIDAR_4_ADDR);
 // ----------------------------------------------------------------------
 // Additional Setup/Info
 // ----------------------------------------------------------------------
-//***********************************************************************************************************************************************
+//*************************************************************************************************************************************************************************
 
   // ----------------------------------------------------------------------
   // The LIDAR-Lite v4 LED is strictly a 3.3V system. The Arduino Due is a
@@ -190,7 +191,7 @@ Lidar4.setI2Caddr(LIDAR_4_ADDR, 1, LIDAR_4_ADDR);
 //======================
 //loop function
 //======================
-//***********************************************************************************************************************************************
+//*************************************************************************************************************************************************************************
 void loop()
 {
   //despite being in the loop function this block will only be triggered once due to the while loop down below
@@ -201,7 +202,7 @@ void loop()
   uint8_t  Lidar4_newDistance;
   uint8_t  inputChar;
 
-  rangeType_T rangeMode = RANGE_NONE;
+  rangeType_T rangeMode = RANGE_CONTINUOUS;
 
   
 
@@ -212,8 +213,6 @@ void loop()
     //===================================================================
     // 2) Call the distance methods for each Lidar
     //===================================================================
-
-    rangeMode = RANGE_CONTINUOUS;
 
     //Im only keeping this as a switch incase we want to stop recording data temporarily for some reason
     switch (rangeMode)
@@ -347,25 +346,7 @@ void loop()
   }
 }
 
-//---------------------------------------------------------------------
-// Menu Print Function
-//---------------------------------------------------------------------
-//***********************************************************************************************************************************************
-void MenuPrint(void)
-{
-  //This is the menu that you will see at the begining of running the program
-  Serial.println("");
-  Serial.println("============================================");
-  Serial.println("== LLv4 - Type a single character command ==");
-  Serial.println("============================================");
-  Serial.println(" 1 - Continuous Measurement");
-  Serial.println(" 2 - Continuous Measurement using trigger / monitor pins");
-  Serial.println(" 3 - Dump Correlation Record");
-  Serial.println(" . - Stop Measurement");
-  Serial.println("");
-}
-
-
+//*************************************************************************************************************************************************************************
 
 //---------------------------------------------------------------------
 // Read Continuous Distance Measurements
@@ -378,7 +359,6 @@ void MenuPrint(void)
 // NOT BUSY this function triggers the next measurement, reads the
 // distance data from the previous measurement, and returns 1.
 //---------------------------------------------------------------------
-//***********************************************************************************************************************************************
 uint8_t Lidar1_distanceContinuous(uint16_t * distance)
 {
   uint8_t newDistance = 0;
