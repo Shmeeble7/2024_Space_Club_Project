@@ -313,9 +313,13 @@ void loop()
     if (Secondary_Board_Lidar_Data)
     {
       //used for testing when data isn't being recieved
+<<<<<<< HEAD
       Secondary_Board_Lidar_Data.print("No Lidar data recieved");
       Secondary_Board_Lidar_Data.print(" T: ");
       Secondary_Board_Lidar_Data.println(millis() / 1000.0);
+=======
+      Secondary_Board_Lidar_Data.println("No Lidar data recieved");
+>>>>>>> 1beb8216f8c0b2d30fbf485079b0f70a9c220d49
       Secondary_Board_Lidar_Data.close();
     }
   }
